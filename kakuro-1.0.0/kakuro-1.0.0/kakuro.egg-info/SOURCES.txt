@@ -1,0 +1,6 @@
+setup.py
+kakuro/__init__.py
+kakuro.egg-info/PKG-INFO
+kakuro.egg-info/SOURCES.txt
+kakuro.egg-info/dependency_links.txt
+kakuro.egg-info/top_level.txt

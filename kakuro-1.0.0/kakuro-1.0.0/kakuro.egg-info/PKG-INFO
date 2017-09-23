@@ -1,0 +1,30 @@
+Metadata-Version: 1.0
+Name: kakuro
+Version: 1.0.0
+Summary: Library to represent and solve Kakuro puzzles.
+Home-page: http://www.site.uottawa.ca/~mraap046
+Author: Sebastian Raaphorst
+Author-email: srcoding@gmail.com
+License: Apache 2.0
+Description: 
+        A package to represent adn solve Kakuro puzzles. Puzzles are input as two
+        dimensional arrays of either Blank objects (entries to be filled in or that are
+        already filled in with a value) or Block objects (greyed out entries, possibly
+        specifying a vertical and / or horizontal sum).
+        
+        The package uses an iterative process to refine the board, and backtracking by
+        branching on an entry with the fewest number of possible values when refinement
+        fails to make any progress.
+        
+        A generator is used to provide solutions in the case of boards with no solutions
+        or ambiguous boards with multiple solutions.
+Keywords: kakuro sudoku board games puzzles
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Education
+Classifier: Topic :: Games/Entertainment :: Board Games
+Classifier: Topic :: Games/Entertainment :: Puzzle Games
