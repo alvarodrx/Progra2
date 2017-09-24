@@ -1,6 +1,9 @@
 import pygame
 import random
 import pygbutton
+from tkinter import filedialog
+import time
+import os
 
 blueP = (30,30,30)#(20, 34, 238)
 greenP = (20, 240, 50)
@@ -10,6 +13,7 @@ BLACK = (0, 0, 0)
 
 Fuente = pygame.font.Font(None, 16)
 
+gameList = "NoIniciada"
 
 #px = int(eval(input("Coordenada en X: ")))
 #py = int(eval(input("Coordenada en Y: ")))
@@ -18,28 +22,45 @@ py = 0
 
 x = 0
 y = 0
-pygame.init()
-tamaño = int(eval(input("Tamaño del X x X: "))) +1
+
+tamaño = int(eval(input("Tamaño del X x X: ")))
+
 sizeSquare = 650//tamaño
 tamPlantilla = tamaño * sizeSquare
 
-size = (tamPlantilla, tamPlantilla+sizeSquare)
-screen = pygame.display.set_mode(size)
-pygame.display.set_caption("Grid on PYGAME")
-clock = pygame.time.Clock()
+size = (tamPlantilla, tamPlantilla+50)
+screen = ""
 gameOver = False
 
 colVar = [0,0,0]
 
-buttonObj = pygbutton.PygButton((tamPlantilla/2-100,tamPlantilla + 3, 200, sizeSquare), 'Button Caption',whiteP,blueP,Fuente)
+buttonObj = pygbutton.PygButton((tamPlantilla/2-100,tamPlantilla + 5, 200, 40), 'Button Caption',whiteP,blueP,Fuente)
 
-while not gameOver:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            gameOver = True
-        if 'click' in buttonObj.handleEvent(event):
-            print("responde el boton")
+def loadFile():
+    game = []
+    try:
+        load = filedialog.askopenfilename(filetypes=[("Archivos sav", "*.sav")])
+        if load == "":
+            return []
+        saved = open(load, "r")
+        game = saved.readline()
+        game = eval(game)
+        saved.close()
+        return game
+    except:
+        return game
 
+def saveFile(game):
+    archivo = asksaveasfilename(defaultextension=".sav")
+    try:
+        save = open(archivo, "a")
+        save.write(str(game))
+        save.close()
+        return
+    except:
+        return
+
+def drawGrid():
     colVar[random.randrange(0, 3)] = random.randrange(100, 255)
     colScreen = (colVar[0],colVar[1],colVar[2])#(random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255))
     screen.fill(colScreen)
@@ -70,5 +91,25 @@ while not gameOver:
     #start_button = pygame.draw.rect(screen, (200, 200, 200), (tamPlantilla, tamPlantilla-sizeSquare, 100, 50));
     buttonObj.draw(screen)
     pygame.display.flip()
-    clock.tick(10)
+
+def inicio():
+    global gameList,gameOver, screen
+    print(gameList)
+    gameList = loadFile()
+    print(gameList)
+    pygame.init()
+    pygame.display.set_caption("Grid on PYGAME")
+    screen = pygame.display.set_mode(size)
+    # pygame.display.set_caption("Grid on PYGAME")
+    clock = pygame.time.Clock()
+    while not gameOver:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                gameOver = True
+            if 'click' in buttonObj.handleEvent(event):
+                print("responde el boton")
+        drawGrid()
+        clock.tick(10)
+
+inicio()
 pygame.quit()
