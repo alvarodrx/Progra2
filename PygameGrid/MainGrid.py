@@ -1,7 +1,9 @@
 import pygame
 import random
 import pygbutton
-from tkinter import filedialog
+from tkinter.filedialog import *
+import kakuroMaker
+import pprint #Se debe instalar a traves de pycharm
 import time
 import os
 
@@ -13,6 +15,8 @@ BLACK = (0, 0, 0)
 
 Fuente = pygame.font.Font(None, 16)
 
+kakuro = ""
+
 gameList = "NoIniciada"
 
 #px = int(eval(input("Coordenada en X: ")))
@@ -23,18 +27,18 @@ py = 0
 x = 0
 y = 0
 
-tamaño = int(eval(input("Tamaño del X x X: ")))
+tamaño = 0
 
-sizeSquare = 650//tamaño
-tamPlantilla = tamaño * sizeSquare
+sizeSquare = 0
+tamPlantilla = 0
 
-size = (tamPlantilla, tamPlantilla+50)
+size = 0
 screen = ""
 gameOver = False
 
 colVar = [0,0,0]
 
-buttonObj = pygbutton.PygButton((tamPlantilla/2-100,tamPlantilla + 5, 200, 40), 'Button Caption',whiteP,blueP,Fuente)
+buttonObj = ""
 
 def loadFile():
     game = []
@@ -68,7 +72,7 @@ def drawGrid():
     Tx = 0
     Ty = 0
     for i in range(1, size[0], sizeSquare):
-        for j in range(1, size[1]-sizeSquare, sizeSquare):
+        for j in range(1, size[0], sizeSquare):
             pygame.draw.rect(screen, BLACK, [i, j, sizeSquare-1, sizeSquare-1], 0)#(screen, (random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255)), [i, j, sizeSquare-1, sizeSquare-1], 0)
             if py == 0:
                 y = 1
@@ -93,15 +97,36 @@ def drawGrid():
     pygame.display.flip()
 
 def inicio():
-    global gameList,gameOver, screen
+    global gameList,gameOver, screen, kakuro, tamaño, sizeSquare, tamPlantilla, size, buttonObj
+
+    #Rutina de inicializacion
+    tamaño = int(eval(input("Tamaño del X x X: ")))
+    sizeSquare = 650 // tamaño
+    tamPlantilla = tamaño * sizeSquare
+
+    size = (tamPlantilla, tamPlantilla + 50)
     print(gameList)
-    gameList = loadFile()
-    print(gameList)
+    print("Desea cargar un tablero guardado? S/N ")
+    cargar = input("- ")
+    if cargar == "S":
+        gameList = loadFile()
+        print("Tablero cargado")
+        print(gameList)
+    else:
+        kakuro = kakuroMaker.kakuroMaker(tamaño).getNewGame()
+        print("Desea guardar el tablero nuevo? S/N ")
+        guardar = input("- ")
+        if guardar == "S":
+            saveFile(str(kakuro))
+        pprint.pprint(kakuro)
+
+    buttonObj = pygbutton.PygButton((tamPlantilla / 2 - 100, tamPlantilla + 5, 200, 40), 'Button Caption', whiteP, blueP, Fuente)
+    screen = pygame.display.set_mode(size)
     pygame.init()
     pygame.display.set_caption("Grid on PYGAME")
-    screen = pygame.display.set_mode(size)
     # pygame.display.set_caption("Grid on PYGAME")
     clock = pygame.time.Clock()
+
     while not gameOver:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
