@@ -4,23 +4,23 @@ import pygbutton
 from tkinter.filedialog import *
 import kakuroMaker
 import pprint #Se debe instalar a traves de pycharm
+import numpy as np
 import time
 import os
 
-blueP = (30,30,30)#(20, 34, 238)
+blueP = (20,80,255)#(20, 34, 238)
 greenP = (20, 240, 50)
 redP = (230, 0, 20)
 whiteP = (255,255,255)
 BLACK = (0, 0, 0)
+colScreen = (0, 0, 0)
+colVar = [0,0,0]
 
-Fuente = pygame.font.Font(None, 16)
-
-kakuro = ""
+Fuente = pygame.font.Font(None, 20)
+fontSize = 10
 
 gameList = "NoIniciada"
 
-#px = int(eval(input("Coordenada en X: ")))
-#py = int(eval(input("Coordenada en Y: ")))
 px = 0
 py = 0
 
@@ -28,27 +28,25 @@ x = 0
 y = 0
 
 tamaño = 0
-
 sizeSquare = 0
 tamPlantilla = 0
-
 size = 0
 screen = ""
+
 gameOver = False
 
-colVar = [0,0,0]
-
-buttonObj = ""
+newGameButton = ""
+saveGameButton = ""
+solveGameButton = ""
 
 def loadFile():
     game = []
     try:
-        load = filedialog.askopenfilename(filetypes=[("Archivos sav", "*.sav")])
+        load = askopenfilename(filetypes=[("Archivos sav", "*.sav")])
         if load == "":
             return []
         saved = open(load, "r")
-        game = saved.readline()
-        game = eval(game)
+        game = eval(saved.readline())
         saved.close()
         return game
     except:
@@ -65,65 +63,76 @@ def saveFile(game):
         return
 
 def drawGrid():
-    colVar[random.randrange(0, 3)] = random.randrange(100, 255)
+    global colScreen
+    colVar[random.randrange(0, 3)] = random.randrange(10, 70)
     colScreen = (colVar[0],colVar[1],colVar[2])#(random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255))
     screen.fill(colScreen)
-    Fuente = pygame.font.Font(None, 16)
-    Tx = 0
-    Ty = 0
+    halfSquareSize = sizeSquare // 2
+    Ti = 0
     for i in range(1, size[0], sizeSquare):
+        Tj = 0
         for j in range(1, size[0], sizeSquare):
-            pygame.draw.rect(screen, BLACK, [i, j, sizeSquare-1, sizeSquare-1], 0)#(screen, (random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255)), [i, j, sizeSquare-1, sizeSquare-1], 0)
-            if py == 0:
-                y = 1
-            elif py == Ty:
-                y = j
-            Ty += 1
-        if px == 0:
-            x = 1
-        elif px == Tx:
-            x = i
-        Texto = Fuente.render(str(Tx), True, whiteP)
-        screen.blit(Texto, [i+2, 2])
-        if Tx != 0:
-            screen.blit(Texto, [2, i+2])
-        Tx += 1
-        Ty = 0
+            if gameList[Tj][Ti] == [] :
+                pygame.draw.rect(screen, BLACK, [i, j, sizeSquare - 1, sizeSquare - 1], 0)  # (screen, (random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255)), [i, j, sizeSquare-1, sizeSquare-1], 0)
+            elif len(gameList[Tj][Ti]) == 1 :
+                pygame.draw.rect(screen, whiteP, [i, j, sizeSquare-1, sizeSquare-1], 0)#(screen, (random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255)), [i, j, sizeSquare-1, sizeSquare-1], 0)
+                actVal = gameList[Tj][Ti][0]
+                if actVal != 0:
+                    valCell = Fuente.render(str(actVal), True, BLACK)
+                    screen.blit(valCell, [i + halfSquareSize, j + halfSquareSize])
+            elif len(gameList[Tj][Ti]) == 2 :
+                valRC = gameList[Tj][Ti]
+                pygame.draw.rect(screen, blueP, [i, j, sizeSquare-1, sizeSquare-1], 0)#(screen, (random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255)), [i, j, sizeSquare-1, sizeSquare-1], 0)
+                if valRC[0] != 0:
+                    valRow = Fuente.render(str(valRC[0]), True, BLACK)
+                    screen.blit(valRow, [i + halfSquareSize - fontSize, j + (sizeSquare*0.7//1)])
+                if valRC[1] != 0:
+                    valCol = Fuente.render(str(valRC[1]), True, BLACK)
+                    screen.blit(valCol, [i + (sizeSquare*0.7//1), j + halfSquareSize - fontSize])
+                pygame.draw.line(screen, whiteP, [i+1, j+1], [i + sizeSquare - 1, j + sizeSquare - 1], 1)
+
+            Tj += 1
+        Ti += 1
     colAl = (random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255))
 
-    #pygame.draw.rect(screen, colAl, [x, y, sizeSquare-1, sizeSquare-1], 0)
-    #start_button = pygame.draw.rect(screen, (200, 200, 200), (tamPlantilla, tamPlantilla-sizeSquare, 100, 50));
-    buttonObj.draw(screen)
+    newGameButton.draw(screen)
+    saveGameButton.draw(screen)
+    solveGameButton.draw(screen)
     pygame.display.flip()
 
 def inicio():
-    global gameList,gameOver, screen, kakuro, tamaño, sizeSquare, tamPlantilla, size, buttonObj
+    global gameList,gameOver, screen, tamaño, sizeSquare, tamPlantilla, size, newGameButton, saveGameButton, solveGameButton, Fuente, colScreen
 
     #Rutina de inicializacion
-    tamaño = int(eval(input("Tamaño del X x X: ")))
-    sizeSquare = 650 // tamaño
-    tamPlantilla = tamaño * sizeSquare
-
-    size = (tamPlantilla, tamPlantilla + 50)
-    print(gameList)
     print("Desea cargar un tablero guardado? S/N ")
     cargar = input("- ")
     if cargar == "S":
         gameList = loadFile()
-        print("Tablero cargado")
-        print(gameList)
+        print(str(type(gameList)))
+        pprint.pprint(gameList)
+        if type(gameList) == list:
+            print("Tablero cargado con exito")
+        tamaño = len(gameList)
     else:
-        kakuro = kakuroMaker.kakuroMaker(tamaño).getNewGame()
+        tamaño = int(eval(input("Tamaño del tablero: ")))
+        gameList = kakuroMaker.kakuroMaker(tamaño).getNewGame()
         print("Desea guardar el tablero nuevo? S/N ")
         guardar = input("- ")
         if guardar == "S":
-            saveFile(str(kakuro))
-        pprint.pprint(kakuro)
-
-    buttonObj = pygbutton.PygButton((tamPlantilla / 2 - 100, tamPlantilla + 5, 200, 40), 'Button Caption', whiteP, blueP, Fuente)
+            saveFile(gameList)
+        pprint.pprint(gameList)
+    #Configuracion de pantalla
+    sizeSquare = 650 // tamaño
+    tamPlantilla = tamaño * sizeSquare
+    size = (tamPlantilla, tamPlantilla + 50)
+    newGameButton = pygbutton.PygButton((10, tamPlantilla + 5, 200, 40), 'Generar nuevo', redP, colScreen, Fuente)
+    saveGameButton = pygbutton.PygButton((tamPlantilla / 2 - 100, tamPlantilla + 5, 200, 40), 'Guardar juego', greenP, colScreen, Fuente)
+    solveGameButton = pygbutton.PygButton((tamPlantilla / 2 + 110, tamPlantilla + 5, 200, 40), 'Resolver juego', blueP, colScreen, Fuente)
+    fontSize = sizeSquare // 3
+    Fuente = pygame.font.Font(None, fontSize)
     screen = pygame.display.set_mode(size)
     pygame.init()
-    pygame.display.set_caption("Grid on PYGAME")
+    pygame.display.set_caption("KA-KUR-OH!")
     # pygame.display.set_caption("Grid on PYGAME")
     clock = pygame.time.Clock()
 
@@ -131,8 +140,12 @@ def inicio():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 gameOver = True
-            if 'click' in buttonObj.handleEvent(event):
-                print("responde el boton")
+            if 'click' in newGameButton.handleEvent(event):
+                gameList = kakuroMaker.kakuroMaker(tamaño).getNewGame()
+            if 'click' in saveGameButton.handleEvent(event):
+                saveFile(gameList)
+            if 'click' in solveGameButton.handleEvent(event):
+                print("T LA KREISTE WE!")
         drawGrid()
         clock.tick(10)
 
