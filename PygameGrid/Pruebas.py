@@ -396,7 +396,7 @@
 # lista = kakuroMaker(12).getNewGame()
 # for i in range(0, len(lista)):
 #     print(lista[i])
-
+'''
 import multiprocessing
 import time
 
@@ -440,3 +440,64 @@ class Test:
 if __name__ == '__main__':
     test = Test()
     test.start()
+'''
+
+import kakuroMaker
+from itertools import *
+from copy import copy
+
+def uCellSolver(game): #Resuelve todos los valores de una celda
+    size = len(game)
+    for row, col in product(range(size), repeat=2):
+        if game[row][col] and len(game[row][col]) == 2:
+            rowVal = game[row][col][0]
+            colVal = game[row][col][1]
+            #Columnas
+            if (rowVal > 0) and (rowVal < 10):
+                cellQ = 0
+                nonBlank = True
+                pos = row + 1
+                while nonBlank and pos < size:
+                    if game[pos][col] == []:
+                        nonBlank = False
+                    elif len(game[pos][col]) == 1:
+                        cellQ += 1
+                    else:
+                        nonBlank = False
+                    pos += 1
+                if cellQ == 1:
+                    game[row + 1][col][0] = rowVal
+            #Filas
+            if (colVal > 0) and (colVal < 10):
+                cellQ = 0
+                nonBlank = True
+                pos = col + 1
+                while nonBlank and pos < size:
+                    if game[row][pos] == []:
+                        nonBlank = False
+                    elif len(game[row][pos]) == 1:
+                        cellQ += 1
+                    else:
+                        nonBlank = False
+                    pos += 1
+                if cellQ == 1:
+                    game[row ][col + 1][0] = colVal
+
+def printLista(lista):
+    for i in range(0, len(lista)):
+        print(lista[i])
+    print("\n")
+
+lista = kakuroMaker.kakuroMaker(20).getNewGame()
+printLista(lista)
+
+for row, col in product(range(len(lista)), repeat=2):
+    actual = lista[row][col]
+    if len(actual) == 1:
+        lista[row][col] = [0]
+
+printLista(lista)
+
+uCellSolver(lista)
+
+printLista(lista)

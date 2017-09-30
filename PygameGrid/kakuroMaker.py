@@ -92,7 +92,6 @@ class kakuroMaker:
                         raw.append(typeCell)  # 0 es negro, 1 es de fila , 2 es de columna, 3 es de fila y columna
             gameList.append(raw)
             raw = []
-            pprint.pprint(gameList)
 
         for i in range(0, size):
             for j in range(0, size):
@@ -133,39 +132,6 @@ class kakuroMaker:
                             j = size
 
                     else:  # Evita adyacencia con columnas
-                        # if (size - j) > 10:
-                        #     thisRow = gameList[i] #fila actual
-                        #     notRepeatFlag = False  # Indica que no hay repeticiones de numeros en la lista
-                        #     trys = 0
-                        #     valuesList = []
-                        #     posibLenght = 0  # tamaño maximo antes de tocar con adyacencia o con repeticiones
-                        #     while notRepeatFlag:
-                        #         position = j + 1  # pociacion de la siguiente celda
-                        #         posibLenght = 0  # tamaño maximo antes de tocar con adyacencia o con repeticiones
-                        #         valuesList = []
-                        #         while (trys < 10) and (position < (j+10-trys)) and (thisRow[position] != []):
-                        #             valuesList.append(thisRow[position])
-                        #             position += 1
-                        #             posibLenght += 1
-                        #         notRepeatFlag = self.repeatsOnArray(valuesList)
-                        #         trys += 1
-                        #         if (thisRow[j+posibLenght+1] < size) and (type(thisRow[j+posibLenght+1]) is list):
-                        #             notRepeatFlag = True
-                        #     if posibLenght != 0:
-                        #         newRowArray = self.getArrayForArray(valuesList)
-                        #         newRowVal = np.sum(newRowArray)
-                        #         gameList[i][j] = [0, newRowVal]
-                        #         j += 1
-                        #         actual = j
-                        #         while j < (actual + numberOfCells):
-                        #             gameList[i][j] = newRowArray[indice]  # Coloca el valor del indice
-                        #             indice += 1
-                        #             j += 1
-                        #         if j < size:
-                        #             gameList[i][j] = []
-                        #     else:
-                        #         gameList[i][j] = []
-
                         if (size - j) >= 2:
                             thisRow = gameList[i]  # fila actual
                             notRepeatFlag = True  # Indica que no hay repeticiones de numeros en la lista
