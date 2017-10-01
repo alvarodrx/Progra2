@@ -1,6 +1,7 @@
 import random
 import pprint
 import numpy as np
+from itertools import *
 
 
 
@@ -45,7 +46,6 @@ class kakuroMaker:
         for i in array:
             if (type(i) is list) and len(i) == 1:
                 listReturn.append(i)
-
             else:
                 indice = 0
                 if len(numberList) > 1:
@@ -59,11 +59,21 @@ class kakuroMaker:
 
     def repeatsOnArray(self, array): #Busca repeticiones en una lista
         compArray = [] #lista de comparacion
-        for i in array:
-            if (type(i) is list) and len(i) == 1:
-                if compArray.count(i[0]) > 0:
+        if array:
+            for i in array:
+                if (type(i) is list) and len(i) == 1:
+                    if compArray.count(i[0]) > 0:
+                        return True
+                    compArray.append(i[0])
+        return False
+
+    def repeatsOnArray2(self, array): #Busca repeticiones en una lista
+        compArray = [] #lista de comparacion
+        if array:
+            for i in array:
+                if compArray.count(i) > 0:
                     return True
-                compArray.append(i[0])
+                compArray.append(i)
         return False
 
 
@@ -78,15 +88,22 @@ class kakuroMaker:
                 if random.randrange(0, 2) == 0:
                     raw.append(0)
                 else:
-                    if j == (size - 1):
+                    if i == 0:
+                        if j == 0:
+                            typeCell = 0
+                            raw.append(typeCell)  # 0 es negro, 1 es de fila , 2 es de columna, 3 es de fila y columna
+                        else:
+                            typeCell = random.randrange(0, 2) * 2  # 0 o 1
+                            raw.append(typeCell)  # 0 es negro, 1 es de fila , 2 es de columna, 3 es de fila y columna
+                    elif j == 0 or i == (size - 1):
+                        typeCell = random.randrange(0, 2)   # 0 o 1
+                        raw.append(typeCell)  # 0 es negro, 1 es de fila , 2 es de columna, 3 es de fila y columna
+                    elif j == (size - 1):
                         if i == (size - 1):
                             raw.append(0)  # En la esquina de abajo siempre va un 0
                         else:
                             typeCell = random.randrange(0, 2) * 2  # 0 o 2
                             raw.append(typeCell)  # 0 es negro, 1 es de fila , 2 es de columna, 3 es de fila y columna
-                    elif i == (size - 1):
-                        typeCell = random.randrange(0, 2)  # 0 o 1
-                        raw.append(typeCell)  # 0 es negro, 1 es de fila , 2 es de columna, 3 es de fila y columna
                     else:
                         typeCell = random.randrange(0, 4)  # 0 o 1
                         raw.append(typeCell)  # 0 es negro, 1 es de fila , 2 es de columna, 3 es de fila y columna
@@ -266,41 +283,6 @@ class kakuroMaker:
                                 gameList[i][k] = []
                             j = size
                     else:  # Evita adyacencia con columnas
-                        # if (size - j) > 10:
-                        #     thisRow = gameList[i] #fila actual
-                        #     notRepeatFlag = False  # Indica que no hay repeticiones de numeros en la lista
-                        #     trys = 0
-                        #     valuesList = []
-                        #     posibLenght = 0  # tamaño maximo antes de tocar con adyacencia o con repeticiones
-                        #     while notRepeatFlag:
-                        #         position = j + 1  # pociacion de la siguiente celda
-                        #         posibLenght = 0  # tamaño maximo antes de tocar con adyacencia o con repeticiones
-                        #         valuesList = []
-                        #         while (trys < 10) and (position < (j+10-trys)) and (thisRow[position] != []):
-                        #             valuesList.append(thisRow[position])
-                        #             position += 1
-                        #             posibLenght += 1
-                        #         notRepeatFlag = self.repeatsOnArray(valuesList)
-                        #         trys += 1
-                        #         if (thisRow[j+posibLenght+1] < size) and (type(thisRow[j+posibLenght+1]) is list):
-                        #             notRepeatFlag = True
-                        #     if posibLenght != 0:
-                        #         newRowArray = self.getArrayForArray(valuesList)
-                        #         print("Array: ",newRowArray)
-                        #         newRowVal = np.sum(newRowArray)
-                        #         newCRVal[1] = newRowVal
-                        #         gameList[i][j] = newCRVal
-                        #         j += 1
-                        #         actual = j
-                        #         while j < (actual + numberOfCells):
-                        #             gameList[i][j] = newRowArray[indice]  # Coloca el valor del indice
-                        #             indice += 1
-                        #             j += 1
-                        #         if j < size:
-                        #             gameList[i][j] = []
-                        #     else:
-                        #         gameList[i][j] = []
-
                         if (size - j) >= 2:
                             thisRow = gameList[i]  # fila actual
                             notRepeatFlag = True  # Indica que no hay repeticiones de numeros en la lista
@@ -339,11 +321,92 @@ class kakuroMaker:
                             else:
                                 newCRVal[1] = 0
                                 gameList[i][j] = newCRVal
-
                         else:
                             newCRVal[1] = 0
                             gameList[i][j] = newCRVal
 
+        #Rescata valores de celdas perdidas y comprueba que no hayan repeticiones
+        repeatsOnScan = False
+        for row, col in product(range(0,size), repeat=2):
+            if not gameList[row][col] and col < (size-1) and len(gameList[row][col + 1]) == 1:
+                gameList[row][col] = [0, 0]
+                pos = col + 1
+                finishList = False
+                suma = 0
+                listTaked = []
+                while pos < size and not finishList:
+                    if not gameList[row][pos] or len(gameList[row][pos]) == 2:
+                        finishList = True
+                    else:
+                        suma += gameList[row][pos][0]
+                        listTaked.append(gameList[row][pos][0])
+                    pos += 1
+                gameList[row][col][1] = suma
+                print("col:",suma)
+                print(listTaked)
+                repeatsOnScan = self.repeatsOnArray2(listTaked)
+                if repeatsOnScan: #Si encuentra repeticiones repite el proceso desde el inicio
+                    print("Repeticiones hayadas, generando de nuevo")
+                    return self.getNewGame()
+                if row < (size-1) and len(gameList[row + 1][col]) == 1:
+                    pos = row + 1
+                    finishList = False
+                    suma = 0
+                    listTaked = []
+                    while pos < size and not finishList:
+                        if not gameList[pos][col] or len(gameList[pos][col]) == 2:
+                            finishList = True
+                        else:
+                            suma += gameList[pos][col][0]
+                            listTaked.append(gameList[pos][col][0])
+                        pos += 1
+                    gameList[row][col][0] = suma
+                    print("Row: ",suma)
+                    print(listTaked)
+                    repeatsOnScan = self.repeatsOnArray2(listTaked)
+                    if repeatsOnScan:  # Si encuentra repeticiones repite el proceso desde el inicio
+                        print("Repeticiones hayadas, generando de nuevo")
+                        return self.getNewGame()
+            elif not gameList[row][col] and row < (size - 1) and len(gameList[row + 1][col]) == 1:
+                gameList[row][col] = [0, 0]
+                pos = row + 1
+                finishList = False
+                suma = 0
+                listTaked = []
+                while pos < size and not finishList:
+                    if not gameList[pos][col] or len(gameList[pos][col]) == 2:
+                        finishList = True
+                    else:
+                        suma += gameList[pos][col][0]
+                        listTaked.append(gameList[pos][col][0])
+                    pos += 1
+                gameList[row][col][0] = suma
+                print("Row: ", suma)
+                print(listTaked)
+                repeatsOnScan = self.repeatsOnArray2(listTaked)
+                if repeatsOnScan:  # Si encuentra repeticiones repite el proceso desde el inicio
+                    print("Repeticiones hayadas, generando de nuevo")
+                    return self.getNewGame()
+                if col < (size-1) and len(gameList[row][col + 1]) == 1:
+                    pos = col + 1
+                    finishList = False
+                    suma = 0
+                    listTaked = []
+                    while pos < size and not finishList:
+                        if not gameList[row][pos] or len(gameList[row][pos]) == 2:
+                            finishList = True
+                        else:
+                            suma += gameList[row][pos][0]
+                            listTaked.append(gameList[row][pos][0])
+                        pos += 1
+                    gameList[row][col][1] = suma
+                    print("col:",suma)
+                    print(listTaked)
+                    repeatsOnScan = self.repeatsOnArray2(listTaked)
+                    if repeatsOnScan: #Si encuentra repeticiones repite el proceso desde el inicio
+                        print("Repeticiones hayadas, generando de nuevo")
+                        return self.getNewGame()
+            #elif gameList[row][col] and col < (size-1) and len(gameList[row][col + 1]) == 2:
 
 
         return gameList
