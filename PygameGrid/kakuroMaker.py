@@ -105,7 +105,7 @@ class kakuroMaker:
                             typeCell = random.randrange(0, 2) * 2  # 0 o 2
                             raw.append(typeCell)  # 0 es negro, 1 es de fila , 2 es de columna, 3 es de fila y columna
                     else:
-                        typeCell = random.randrange(0, 2) *3  # 0 o 1
+                        typeCell = random.randrange(0, 4)
                         raw.append(typeCell)  # 0 es negro, 1 es de fila , 2 es de columna, 3 es de fila y columna
             gameList.append(raw)
             raw = []
@@ -319,7 +319,7 @@ class kakuroMaker:
                         else:
                             newCRVal[1] = 0
                             gameList[i][j] = newCRVal
-        self.printLista(gameList)
+        #self.printLista(gameList)
         #Rescata valores de celdas perdidas y comprueba que no hayan repeticiones
         repeatsOnScan = False
         for row, col in product(range(0,size), repeat=2):
@@ -337,11 +337,11 @@ class kakuroMaker:
                         listTaked.append(gameList[row][pos][0])
                     pos += 1
                 gameList[row][col][1] = suma
-                print("col:", suma)
-                print(listTaked)
+                #print("col:", suma)
+                #print(listTaked)
                 repeatsOnScan = self.repeatsOnArray2(listTaked)
                 if repeatsOnScan:  # Si encuentra repeticiones repite el proceso desde el inicio
-                    print("Repeticiones hayadas, generando de nuevo")
+                    #print("Repeticiones hayadas, generando de nuevo")
                     return self.getNewGame()
                 if row < (size-1) and len(gameList[row + 1][col]) == 1:
                     pos = row + 1
@@ -356,11 +356,11 @@ class kakuroMaker:
                             listTaked.append(gameList[pos][col][0])
                         pos += 1
                     gameList[row][col][0] = suma
-                    print("Row: ",suma)
-                    print(listTaked)
+                    #print("Row: ",suma)
+                    #print(listTaked)
                     repeatsOnScan = self.repeatsOnArray2(listTaked)
                     if repeatsOnScan:  # Si encuentra repeticiones repite el proceso desde el inicio
-                        print("Repeticiones hayadas, generando de nuevo")
+                        #print("Repeticiones hayadas, generando de nuevo")
                         return self.getNewGame()
             elif not gameList[row][col] and row < (size - 1) and len(gameList[row + 1][col]) == 1:
                 gameList[row][col] = [0, 0]
@@ -376,11 +376,11 @@ class kakuroMaker:
                         listTaked.append(gameList[pos][col][0])
                     pos += 1
                 gameList[row][col][0] = suma
-                print("Row: ", suma)
-                print(listTaked)
+                #print("Row: ", suma)
+                #print(listTaked)
                 repeatsOnScan = self.repeatsOnArray2(listTaked)
                 if repeatsOnScan:  # Si encuentra repeticiones repite el proceso desde el inicio
-                    print("Repeticiones hayadas, generando de nuevo")
+                    #print("Repeticiones hayadas, generando de nuevo")
                     return self.getNewGame()
                 if col < (size-1) and len(gameList[row][col + 1]) == 1:
                     pos = col + 1
@@ -395,11 +395,11 @@ class kakuroMaker:
                             listTaked.append(gameList[row][pos][0])
                         pos += 1
                     gameList[row][col][1] = suma
-                    print("col:",suma)
-                    print(listTaked)
+                    #print("col:",suma)
+                    #print(listTaked)
                     repeatsOnScan = self.repeatsOnArray2(listTaked)
                     if repeatsOnScan: #Si encuentra repeticiones repite el proceso desde el inicio
-                        print("Repeticiones hayadas, generando de nuevo")
+                        #print("Repeticiones hayadas, generando de nuevo")
                         return self.getNewGame()
             elif len(gameList[row][col]) == 2:
                 if gameList[row][col][0] == 0 and row < (size-1) and len(gameList[row + 1][col]) == 1:
@@ -415,11 +415,11 @@ class kakuroMaker:
                             listTaked.append(gameList[pos][col][0])
                         pos += 1
                     gameList[row][col][0] = suma
-                    print("Row: ", suma)
-                    print(listTaked)
+                    #print("Row: ", suma)
+                    #print(listTaked)
                     repeatsOnScan = self.repeatsOnArray2(listTaked)
                     if repeatsOnScan:  # Si encuentra repeticiones repite el proceso desde el inicio
-                        print("Repeticiones hayadas, generando de nuevo")
+                        #print("Repeticiones hayadas, generando de nuevo")
                         return self.getNewGame()
                 if gameList[row][col][1] == 0 and (col < (size-1)) and len(gameList[row][col + 1]) == 1:
                     pos = col + 1
@@ -434,11 +434,11 @@ class kakuroMaker:
                             listTaked.append(gameList[row][pos][0])
                         pos += 1
                     gameList[row][col][1] = suma
-                    print("col:", suma)
-                    print(listTaked)
+                    #print("col:", suma)
+                    #print(listTaked)
                     repeatsOnScan = self.repeatsOnArray2(listTaked)
                     if repeatsOnScan:  # Si encuentra repeticiones repite el proceso desde el inicio
-                        print("Repeticiones hayadas, generando de nuevo")
+                        #print("Repeticiones hayadas, generando de nuevo")
                         return self.getNewGame()
 
 

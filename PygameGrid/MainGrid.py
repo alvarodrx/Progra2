@@ -149,5 +149,6 @@ def inicio():
         drawGrid()
         clock.tick(10)
 
+sys.setrecursionlimit(10000)
 inicio()
 pygame.quit()
