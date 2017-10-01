@@ -105,7 +105,7 @@ class kakuroMaker:
                             typeCell = random.randrange(0, 2) * 2  # 0 o 2
                             raw.append(typeCell)  # 0 es negro, 1 es de fila , 2 es de columna, 3 es de fila y columna
                     else:
-                        typeCell = random.randrange(0, 4)  # 0 o 1
+                        typeCell = random.randrange(0, 2) *3  # 0 o 1
                         raw.append(typeCell)  # 0 es negro, 1 es de fila , 2 es de columna, 3 es de fila y columna
             gameList.append(raw)
             raw = []
@@ -117,7 +117,7 @@ class kakuroMaker:
                 elif gameList[i][j] == 1: #construye columnas
                     if i == 0:
                         if (size - j) > 10:
-                            numberOfCells = random.randrange(1, 10)
+                            numberOfCells = random.randrange(2, 10)
                             newRowArray = self.getArrayForNumer(numberOfCells) #Lista de numeros
                             newRowVal = np.sum(newRowArray) #Suma de esos numeros
                             gameList[i][j] = [0, newRowVal] #Coloca el valor de los numeros
@@ -129,8 +129,8 @@ class kakuroMaker:
                                 indice += 1
                                 j += 1
                             gameList[i][j] = [] #Final de la lista
-                        elif (size - j) >= 2:
-                            numberOfCells = random.randrange(1, size - j)
+                        elif (size - j) > 2:
+                            numberOfCells = random.randrange(2, size - j)
                             newRowArray = self.getArrayForNumer(numberOfCells)  # Lista de numeros
                             newRowVal = np.sum(newRowArray)  # Suma de esos numeros
                             gameList[i][j] = [0, newRowVal]  # Coloca el valor de la suma de los numeros
@@ -194,7 +194,7 @@ class kakuroMaker:
 
                 elif gameList[i][j] == 2: #Construye columnas
                     if (size - i) > 10:
-                        numberOfCells = random.randrange(1, 10)
+                        numberOfCells = random.randrange(2, 10)
                         newColArray = self.getArrayForNumer(numberOfCells)  # Lista de numeros
                         newColVal = np.sum(newColArray) # Suma de la lista
                         gameList[i][j] = [newColVal, 0]
@@ -203,8 +203,8 @@ class kakuroMaker:
                             gameList[k][j] = [newColArray[indice]]
                             indice += 1
                         gameList[i + numberOfCells + 1][j] = []
-                    elif (size - i) >= 2:
-                        numberOfCells = random.randrange(1, size - i)
+                    elif (size - i) > 2:
+                        numberOfCells = random.randrange(2, size - i)
                         newColArray = self.getArrayForNumer(numberOfCells)  # Lista de numeros
                         newColVal = np.sum(newColArray)  # Suma de la lista
                         gameList[i][j] = [newColVal, 0]
@@ -222,7 +222,7 @@ class kakuroMaker:
                     newCRVal = [0, 0]
                     # inicio por la columna por que no requiere desplazamiento
                     if (size - i) > 10:
-                        numberOfCells = random.randrange(1, 10)
+                        numberOfCells = random.randrange(2, 10)
                         newColArray = self.getArrayForNumer(numberOfCells)  # Lista de numeros
                         newColVal = np.sum(newColArray) # Suma de la lista
                         newCRVal[0] = newColVal
@@ -242,15 +242,10 @@ class kakuroMaker:
                             indice += 1
                         if (i+numberOfCells+1) < size:
                             gameList[i+numberOfCells+1][j] = []
-                    # else:
-                    #     for k in range(i, size):
-                    #         gameList[k][j] = []
-
-                    # Ahora hago la fila..
 
                     if i == 0:
                         if (size - j) > 10:
-                            numberOfCells = random.randrange(1, 10)
+                            numberOfCells = random.randrange(2, 10)
                             newRowArray = self.getArrayForNumer(numberOfCells) #Lista de numeros
                             newRowVal = np.sum(newRowArray) #Suma de esos numeros
                             newCRVal[1] = newRowVal
@@ -324,7 +319,7 @@ class kakuroMaker:
                         else:
                             newCRVal[1] = 0
                             gameList[i][j] = newCRVal
-
+        self.printLista(gameList)
         #Rescata valores de celdas perdidas y comprueba que no hayan repeticiones
         repeatsOnScan = False
         for row, col in product(range(0,size), repeat=2):
@@ -342,10 +337,10 @@ class kakuroMaker:
                         listTaked.append(gameList[row][pos][0])
                     pos += 1
                 gameList[row][col][1] = suma
-                print("col:",suma)
+                print("col:", suma)
                 print(listTaked)
                 repeatsOnScan = self.repeatsOnArray2(listTaked)
-                if repeatsOnScan: #Si encuentra repeticiones repite el proceso desde el inicio
+                if repeatsOnScan:  # Si encuentra repeticiones repite el proceso desde el inicio
                     print("Repeticiones hayadas, generando de nuevo")
                     return self.getNewGame()
                 if row < (size-1) and len(gameList[row + 1][col]) == 1:
@@ -406,11 +401,53 @@ class kakuroMaker:
                     if repeatsOnScan: #Si encuentra repeticiones repite el proceso desde el inicio
                         print("Repeticiones hayadas, generando de nuevo")
                         return self.getNewGame()
-            #elif gameList[row][col] and col < (size-1) and len(gameList[row][col + 1]) == 2:
+            elif len(gameList[row][col]) == 2:
+                if gameList[row][col][0] == 0 and row < (size-1) and len(gameList[row + 1][col]) == 1:
+                    pos = row + 1
+                    finishList = False
+                    suma = 0
+                    listTaked = []
+                    while pos < size and not finishList:
+                        if not gameList[pos][col] or len(gameList[pos][col]) == 2:
+                            finishList = True
+                        else:
+                            suma += gameList[pos][col][0]
+                            listTaked.append(gameList[pos][col][0])
+                        pos += 1
+                    gameList[row][col][0] = suma
+                    print("Row: ", suma)
+                    print(listTaked)
+                    repeatsOnScan = self.repeatsOnArray2(listTaked)
+                    if repeatsOnScan:  # Si encuentra repeticiones repite el proceso desde el inicio
+                        print("Repeticiones hayadas, generando de nuevo")
+                        return self.getNewGame()
+                if gameList[row][col][1] == 0 and (col < (size-1)) and len(gameList[row][col + 1]) == 1:
+                    pos = col + 1
+                    finishList = False
+                    suma = 0
+                    listTaked = []
+                    while pos < size and not finishList:
+                        if not gameList[row][pos] or len(gameList[row][pos]) == 2:
+                            finishList = True
+                        else:
+                            suma += gameList[row][pos][0]
+                            listTaked.append(gameList[row][pos][0])
+                        pos += 1
+                    gameList[row][col][1] = suma
+                    print("col:", suma)
+                    print(listTaked)
+                    repeatsOnScan = self.repeatsOnArray2(listTaked)
+                    if repeatsOnScan:  # Si encuentra repeticiones repite el proceso desde el inicio
+                        print("Repeticiones hayadas, generando de nuevo")
+                        return self.getNewGame()
 
 
         return gameList
 
+    def printLista(self,lista):
+        for i in range(0, len(lista)):
+            print(lista[i])
+        print("\n")
 # lista = kakuroMaker(12).getNewGame()
 # for i in range(0, len(lista)):
 #     print(lista[i])
