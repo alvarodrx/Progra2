@@ -440,7 +440,8 @@ class Test:
 if __name__ == '__main__':
     test = Test()
     test.start()
-'''
+
+##################################################################################
 
 import kakuroMaker
 from itertools import *
@@ -501,3 +502,92 @@ printLista(lista)
 uCellSolver(lista)
 
 printLista(lista)
+'''
+
+
+
+
+#
+# for i in range(0, size):
+#     for j in range(0, size):
+#         if gameList[i][j] == 0:
+#             gameList[i][j] = []
+#         elif gameList[i][j] == 1:  # construye filas
+#             if i < 2:
+#                 if (size - j) > 10:
+#                     numberOfCells = random.randrange(3, 10)
+#                     newRowArray = self.getArrayForNumer(numberOfCells)  # Lista de numeros
+#                     newRowVal = np.sum(newRowArray)  # Suma de esos numeros
+#                     gameList[i][j] = [0, newRowVal]  # Coloca el valor de los numeros
+#                     indice = 0
+#                     j += 1
+#                     actual = j
+#                     while j < (actual + numberOfCells):
+#                         gameList[i][j] = [newRowArray[indice]]  # Coloca el valor del indice
+#                         indice += 1
+#                         j += 1
+#                     gameList[i][j] = []  # Final de la lista
+#                 elif (size - j) > 2:
+#                     numberOfCells = random.randrange(2, size - j)
+#                     newRowArray = self.getArrayForNumer(numberOfCells)  # Lista de numeros
+#                     newRowVal = np.sum(newRowArray)  # Suma de esos numeros
+#                     gameList[i][j] = [0,
+#                                       newRowVal]  # Coloca el valor de la suma de los numeros
+#                     indice = 0
+#                     j += 1
+#                     actual = j
+#                     while j < (actual + numberOfCells):
+#                         gameList[i][j] = [newRowArray[indice]]  # Coloca el valor del indice
+#                         indice += 1
+#                         j += 1
+#                     if j < size:
+#                         gameList[i][j] = []
+#                 else:
+#                     for k in range(j, size):
+#                         gameList[i][k] = []
+#                     j = size
+
+import matplotlib.pyplot as plt
+from functools import partial
+import multiprocessing
+
+
+def mandelbrotCalcRow(yPos, h, w, max_iteration=1000):
+    y0 = yPos * (2 / float(h)) - 1  # rescale to -1 to 1
+    row = []
+    for xPos in range(w):
+        x0 = xPos * (3.5 / float(w)) - 2.5  # rescale to -2.5 to 1
+        iteration, z = 0, 0 + 0j
+        c = complex(x0, y0)
+        while abs(z) < 2 and iteration < max_iteration:
+            z = z ** 2 + c
+            iteration += 1
+        row.append(iteration)
+    return row
+
+
+def mandelbrotCalcSet(h, w, max_iteration=1000):
+    # make a helper function that better supports pool.map by using only 1 var
+    # This is necessary since the version
+    partialCalcRow = partial(mandelbrotCalcRow, h=h, w=w, max_iteration=max_iteration)
+
+    pool = multiprocessing.Pool()  # creates a pool of process, controls worksers
+    # the pool.map only accepts one iterable, so use the partial function
+    # so that we only need to deal with one variable.
+    mandelImg = pool.map(partialCalcRow, range(h))  # make our results with a map call
+    pool.close()  # we are not adding any more processes
+    pool.join()  # tell it to wait until all threads are done before going on
+
+    return mandelImg
+
+''' Algoritmo normal
+def mandelbrotCalcSet(h, w, max_iteration = 1000):
+    partialCalcRow = partial(mandelbrotCalcRow, h=h, w=w, max_iteration = max_iteration)
+    mandelImg = map(partialCalcRow, xrange(h))
+    return mandelImg'''
+
+
+if __name__=='__main__':
+    mandelImg = mandelbrotCalcSet(1000, 1000, 500)
+    plt.imshow(mandelImg)
+    plt.savefig('mandelimg0.png')

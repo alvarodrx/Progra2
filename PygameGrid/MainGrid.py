@@ -8,15 +8,18 @@ import numpy as np
 import time
 import os
 
-blueP = (20,80,255)#(20, 34, 238)
+blueP = (20,10,255)#(20, 34, 238)
 greenP = (20, 240, 50)
 redP = (230, 0, 20)
 whiteP = (255,255,255)
 BLACK = (0, 0, 0)
+grayP = (15, 15, 15)
 colScreen = (0, 0, 0)
 colVar = [0,0,0]
 
+
 Fuente = pygame.font.Font(None, 20)
+FuenteG = pygame.font.Font(None, 20)
 fontSize = 10
 
 gameList = "NoIniciada"
@@ -82,12 +85,12 @@ def drawGrid():
                     screen.blit(valCell, [i + halfSquareSize, j + halfSquareSize])
             elif len(gameList[Tj][Ti]) == 2 :
                 valRC = gameList[Tj][Ti]
-                pygame.draw.rect(screen, blueP, [i, j, sizeSquare-1, sizeSquare-1], 0)#(screen, (random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255)), [i, j, sizeSquare-1, sizeSquare-1], 0)
+                pygame.draw.rect(screen, grayP, [i, j, sizeSquare-1, sizeSquare-1], 0)#(screen, (random.randrange(1, 255), random.randrange(1, 255), random.randrange(1, 255)), [i, j, sizeSquare-1, sizeSquare-1], 0)
                 if valRC[0] != 0:
-                    valRow = Fuente.render(str(valRC[0]), True, BLACK)
+                    valRow = Fuente.render(str(valRC[0]), True, whiteP)
                     screen.blit(valRow, [i + halfSquareSize - fontSize, j + (sizeSquare*0.7//1)])
                 if valRC[1] != 0:
-                    valCol = Fuente.render(str(valRC[1]), True, BLACK)
+                    valCol = Fuente.render(str(valRC[1]), True, whiteP)
                     screen.blit(valCol, [i + (sizeSquare*0.7//1), j + halfSquareSize - fontSize])
                 pygame.draw.line(screen, whiteP, [i+1, j+1], [i + sizeSquare - 1, j + sizeSquare - 1], 1)
 
@@ -101,7 +104,7 @@ def drawGrid():
     pygame.display.flip()
 
 def inicio():
-    global gameList,gameOver, screen, tamaño, sizeSquare, tamPlantilla, size, newGameButton, saveGameButton, solveGameButton, Fuente, colScreen
+    global gameList,gameOver, screen, tamaño, sizeSquare, tamPlantilla, size, newGameButton, saveGameButton, solveGameButton, Fuente, FuenteG, colScreen
 
     #Rutina de inicializacion
     print("Desea cargar un tablero guardado? S/N ")
@@ -115,7 +118,7 @@ def inicio():
         tamaño = len(gameList)
     else:
         tamaño = int(eval(input("Tamaño del tablero: ")))
-        gameList = kakuroMaker.kakuroMaker(tamaño).getNewGame()
+        gameList = kakuroMaker.kakuroMaker(tamaño).getNewBoard() #generate()
         print("Desea guardar el tablero nuevo? S/N ")
         guardar = input("- ")
         if guardar == "S":
@@ -130,6 +133,7 @@ def inicio():
     solveGameButton = pygbutton.PygButton((tamPlantilla / 2 + 110, tamPlantilla + 5, 200, 40), 'Resolver juego', blueP, colScreen, Fuente)
     fontSize = sizeSquare // 3
     Fuente = pygame.font.Font(None, fontSize)
+    FuenteG = pygame.font.Font(None, fontSize)
     screen = pygame.display.set_mode(size)
     pygame.init()
     pygame.display.set_caption("KA-KUR-OH!")
@@ -141,7 +145,7 @@ def inicio():
             if event.type == pygame.QUIT:
                 gameOver = True
             if 'click' in newGameButton.handleEvent(event):
-                gameList = kakuroMaker.kakuroMaker(tamaño).getNewGame()
+                gameList = kakuroMaker.kakuroMaker(tamaño).getNewBoard() #generate()
             if 'click' in saveGameButton.handleEvent(event):
                 saveFile(gameList)
             if 'click' in solveGameButton.handleEvent(event):
