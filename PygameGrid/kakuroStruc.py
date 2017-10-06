@@ -1,56 +1,3 @@
-#!/usr/bin/env python
-"""This library provides functionality to represent and solve Kakuro boards.
-
-A board is represented by a two dimensional array of KakuroEntry objects,
-either Brick or Blank:
-
-* Brick(v=None, h=None):
-A greyed out brick, possibly specifying a vertical (v) and / or horizontal
-(h) sum.
-
-* Blank(value=None):
-An entry to be filled in, possibly with a value already specified.
-
-The two dimensional array is passed to the constructor of a KakuroBoard:
-
-* KakuroBoard(array)
-Uses the two dimensional array to represent internal data structures
-necessary to solve the Kakuro board. Provides the solve() method to solve a
-board, which functions as a generator in the case of no or multiple solutions.
-
-The board is solved using an iterative refinement process by eliminating
-possible values from entries and candidate values for semirows or semicolumns
-used in sums. When pure refinement yields no more improvement, the algorithm
-uses backtracking, branching on an entry of fewest possible values.
-
-Here is an example of the use of this class to solve a Kokuro board:
-
-board = [[Brick(), Brick(v=14), Brick(v=5), Brick(v=28), Brick(v=3), Brick(), Brick(), Brick(v=26), Brick(v=5), Brick(v=22)],
-         [Brick(h=12), Blank(), Blank(), Blank(), Blank(), Brick(v=12,h=24), Blank(), Blank(), Blank(), Blank()],
-         [Brick(h=23), Blank(), Blank(), Blank(), Blank(), Blank(), Brick(v=32,h=21), Blank(), Blank(), Blank()],
-         [Brick(), Brick(v=7), Brick(v=39), Blank(), Brick(h=6), Blank(), Blank(), Blank(), Brick(v=24), Blank()],
-         [Brick(h=20), Blank(), Blank(), Blank(), Brick(v=19,h=27), Blank(), Blank(), Blank(), Blank(), Brick(v=34)],
-         [Brick(h=6), Blank(), Blank(), Brick(v=22,h=23), Blank(), Blank(), Blank(), Brick(v=13,h=15), Blank(), Blank()],
-         [Brick(h=14), Blank(), Blank(), Blank(), Blank(), Brick(h=14), Blank(), Blank(), Blank(), Blank()],
-         [Brick(), Brick(v=6,h=22), Blank(), Blank(), Blank(), Brick(v=4,h=16), Blank(), Blank(), Brick(v=17), Blank()],
-         [Brick(h=21), Blank(), Blank(), Blank(), Brick(h=24), Blank(), Blank(), Blank(), Blank(), Blank()],
-         [Brick(h=15), Blank(), Blank(), Blank(), Blank(), Blank(), Brick(h=20), Blank(), Blank(), Blank()]]
-
-k = KakuroBoard(board)
-
-for entries in k.solve():
-    print '*** SOLUTION ***'
-    str = ''
-    for row in board:
-        for col in row:
-            if isinstance(col, Brick):
-                str += '_ '
-            else:
-                str += '%s ' % entries[col.myID].possibleValues[0]
-        str += '\n'
-    print str
-"""
-
 import operator
 from functools import reduce
 
@@ -307,7 +254,7 @@ class KakuroBoard:
     def __init__(self, board):
         self.board = board
         self.entries = []
-
+        print(type(board[0][0]))
         # Convert to internal data structure, namely a list of sums represented
         # in the following way:
         # sum, [Blanks in the sum]
@@ -316,6 +263,7 @@ class KakuroBoard:
             for y, entry in enumerate(row):
                 # If the entry is a sum, process the sum.
                 if isinstance(entry, Brick):
+                    brkVal = "Brick: "
                     if entry.verticalSum:
                         blocks = []
                         posx = x + 1
@@ -324,6 +272,7 @@ class KakuroBoard:
                             blocks.append(col[posx])
                             posx += 1
                         sums.append(Sum(entry.verticalSum, blocks))
+                        brkVal += "v=" + str(entry.verticalSum)
                     if entry.horizontalSum:
                         blocks = []
                         posy = y + 1
@@ -331,34 +280,14 @@ class KakuroBoard:
                             blocks.append(row[posy])
                             posy += 1
                         sums.append(Sum(entry.horizontalSum, blocks))
-
+                        brkVal += "h=" + str(entry.horizontalSum)
+                    #print(brkVal)
                 elif isinstance(entry, Blank):
                     self.entries.append(entry)
+                    #print("Blank")
 
         # We have the structure.
         self.sums = sums
-
-    def traslate(self, kakuro):
-        if kakuro == []:
-            return []
-        kakuro = kakuro
-        newBoard = []
-        for i in kakuro:
-            newStruc = []
-            for j in i:
-                if len(j) == 0:
-                    newStruc.append(Brick())
-                elif len(j) == 1:
-                    newStruc.append(Blank())
-                else:
-                    if j[1] == 0:
-                        newStruc.append(Brick(v=j[0]))
-                    elif j[0] == 0:
-                        newStruc.append(Brick(h=j[1]))
-                    else:
-                        newStruc.append(Brick(v=j[0], h=j[1]))
-            newBoard.append(newStruc)
-        return newBoard
 
     def _copyBoard(self, entries, sums):
         """Given a board, make a copy of it. This is used in backtracking.
@@ -371,7 +300,7 @@ class KakuroBoard:
         cEntries = [entry._copy() for entry in entries]
 
         # Now copy the sums. Note that doing so automatically will register each
-        # of the entries with the appropriate sums as required. 
+        # of the entries with the appropriate sums as required.
         cSums = [s._copy(cEntries) for s in sums]
 
         return cEntries, cSums
@@ -458,55 +387,60 @@ class KakuroBoard:
                 # Iteratively solve.
                 for solution in self._solve(cEntries, cSums):
                     yield solution
+    def getBoard(self):
+        return self.board
 
-
-if __name__ == '__main__':
-    # board = [[Brick(),     Brick(v=5),       Brick(v=23), Brick(v=6), Brick(v=30), Brick(),     Brick()],
-    #         [Brick(h=12), Blank(),          Blank(),     Blank(),    Blank(3),    Brick(v=15), Brick(v=5)],
-    #         [Brick(h=27), Blank(),          Blank(),     Blank(),    Blank(),     Blank(),     Blank()],
-    #         [Brick(),     Brick(v=24,h=31), Blank(),     Blank(),    Blank(),     Blank(),     Blank()],
-    #         [Brick(),     Blank(),          Brick(v=15), Brick(v=4), Blank() ,    Brick(v=3),  Brick(v=17)],
-    #         [Brick(h=34), Blank(8),         Blank(),     Blank(),    Blank(),     Blank(),     Blank()],
-    #         [Brick(h=32), Blank(),          Blank(),     Blank(),    Blank(),     Blank(),     Blank()]]
-    # board = [[Brick(), Brick(v=18), Brick(v=8), Brick(), Brick(), Brick(v=17), Brick(v=13)],
-    #         [Brick(h=21), Blank(), Blank(), Blank(), Brick(v=22,h=14), Blank(), Blank()],
-    #         [Brick(h=3), Blank(), Blank(), Brick(v=23,h=21), Blank(), Blank(), Blank()],
-    #         [Brick(h=27), Blank(), Blank(3), Blank(), Blank(), Brick(v=8), Brick(v=24)],
-    #         [Brick(), Brick(v=16), Brick(v=4,h=24), Blank(), Blank(), Blank(), Blank(8)],
-    #         [Brick(h=20), Blank(), Blank(), Blank(8), Brick(h=14), Blank(), Blank()],
-    #         [Brick(h=8), Blank(), Blank(), Brick(h=17), Blank(), Blank(), Blank()]]
-    board = [[Brick(), Brick(v=14), Brick(v=5), Brick(v=28), Brick(v=3), Brick(), Brick(), Brick(v=26), Brick(v=5),
-              Brick(v=22)],
-             [Brick(h=12), Blank(), Blank(), Blank(), Blank(), Brick(v=12, h=24), Blank(), Blank(), Blank(), Blank()],
-             [Brick(h=23), Blank(), Blank(), Blank(), Blank(), Blank(), Brick(v=32, h=21), Blank(), Blank(), Blank()],
-             [Brick(), Brick(v=7), Brick(v=39), Blank(), Brick(h=6), Blank(), Blank(), Blank(), Brick(v=24), Blank()],
-             [Brick(h=20), Blank(), Blank(), Blank(), Brick(v=19, h=27), Blank(), Blank(), Blank(), Blank(),
-              Brick(v=34)],
-             [Brick(h=6), Blank(), Blank(), Brick(v=22, h=23), Blank(), Blank(), Blank(), Brick(v=13, h=15), Blank(),
-              Blank()],
-             [Brick(h=14), Blank(), Blank(), Blank(), Blank(), Brick(h=14), Blank(), Blank(), Blank(), Blank()],
-             [Brick(), Brick(v=6, h=22), Blank(), Blank(), Blank(), Brick(v=4, h=16), Blank(), Blank(), Brick(v=17),
-              Blank()],
-             [Brick(h=21), Blank(), Blank(), Blank(), Brick(h=24), Blank(), Blank(), Blank(), Blank(), Blank()],
-             [Brick(h=15), Blank(), Blank(), Blank(), Blank(), Blank(), Brick(h=20), Blank(), Blank(), Blank()]]
-
-
-    print(board)
-
-    k = KakuroBoard(board)
-    # for s in k.sums:
-    #    print '%2s' % s.value, [i.__str__() for i in s.blankList]
-
-    for entries in k.solve():
-        print('*** SOLUTION ***')
-        # for entry in entries:
-        #    print '%2s: %s' % (entry.myID, entry.possibleValues)
-        str = ''
-        for row in board:
-            for col in row:
-                if isinstance(col, Brick):
-                    str += '_ '
+def traslate(kakuro):
+    board = []
+    blankVal = 0
+    for i in range(len(kakuro)):
+        newRow = []
+        for j in range(len(kakuro[0])):
+            if len(kakuro[i][j]) == 0:
+                valor = Brick()
+            elif len(kakuro[i][j]) == 1:
+                valor = Blank(specificID=blankVal)
+                blankVal += 1
+            else:
+                if kakuro[i][j][1] == 0:
+                    valor = Brick(v= kakuro[i][j][0])
+                elif kakuro[i][j][0] == 0:
+                    valor = Brick(h= kakuro[i][j][1])
                 else:
-                    str += '%s ' % entries[col.myID].possibleValues[0]
-            str += '\n'
-        print(str)
+                    valor = Brick(v= kakuro[i][j][0], h= kakuro[i][j][1])
+            newRow.append(valor)
+        board.append(newRow)
+    return board
+
+
+
+
+# board1 = [[[],[14,0],[5,0],[28,0],[3,0],[],[],[26,0],[5,0],[22,0]],
+#          [[0,12],[0],[0],[0],[0],[12,24],[0],[0],[0],[0]],
+#          [[0,23],[0],[0],[0],[0],[0],[32,21],[0],[0],[0]],
+#          [[],[7,0],[39,0],[0],[0,6],[0],[0],[0],[24,0],[0]],
+#          [[0,20],[0],[0],[0],[19,27],[0],[0],[0],[0],[34,0]],
+#          [[0,6],[0],[0],[22,23],[0],[0],[0],[13,15],[0],[0]],
+#          [[0,14],[0],[0],[0],[0],[0,14],[0],[0],[0],[0]],
+#          [[],[6,22],[0],[0],[0],[4,16],[0],[0],[17,0],[0]],
+#          [[0,21],[0],[0],[0],[0,24],[0],[0],[0],[0],[0]],
+#          [[0,15],[0],[0],[0],[0],[0],[0,20],[0],[0],[0]]]
+#
+# board = traslate(board1)
+#
+# k = KakuroBoard(board)
+# print(k)
+#
+# for entries in k.solve():
+#     print('*** SOLUTION ***')
+#     # for entry in entries:
+#     #    print '%2s: %s' % (entry.myID, entry.possibleValues)
+#     str = ''
+#     for row in k.getBoard():
+#         for col in row:
+#             if isinstance(col, Brick):
+#                 str += '_ '
+#             else:
+#                 str += '%s ' % entries[col.myID].possibleValues[0]
+#         str += '\n'
+#     print(str)

@@ -30,14 +30,8 @@ class kakuroMaker:
         return gameList
 
     def nextAddend(self, added):
-        setLen = 5
+        setLen = len(added)
         nextN = random.randrange(1, 10)
-        while setLen > 0:
-            if nextN in added:
-                nextN = random.randrange(1, 10)
-                setLen -= 1
-            break
-
         return nextN
 
     def isDuplicated(self, row, col, num):
@@ -54,6 +48,48 @@ class kakuroMaker:
                 return True
             i -= 1
         return False
+
+    def isMaxLen(self, row, col):
+        kakuro = self.kakuro
+        duplicates = set()
+        i = row
+        while i > 0 and kakuro[i][col] < 10:
+            duplicates.add(kakuro[i][col])
+            i -= 1
+        if len(duplicates) == 9:
+            return True
+        return False
+
+    def topRow(self, row, col):
+        kakuro = self.kakuro
+        resultRow = set()
+        i = row-1
+        while i > 0 and kakuro[i][col] < 10:
+            resultRow.add(kakuro[i][col])
+            i -= 1
+        return resultRow
+
+    def addendForNonRepits(self, row, col, hSet):
+        kakuro = self.kakuro
+        topRow = self.topRow(row,col)
+        fullSet = [1,2,3,4,5,6,7,8,9]
+
+        for i in hSet:
+            fullSet.remove(i)
+
+        for i in topRow:
+            if i in fullSet:
+                fullSet.remove(i)
+        fLen = len(fullSet)
+        if fLen == 1:
+            return fullSet[0]
+        if fLen > 1:
+            ind = random.randrange(0,fLen)
+            return fullSet[ind]
+        return 10
+
+
+
 
     def hAdd(self, row, col):
         sum = 0
@@ -86,11 +122,19 @@ class kakuroMaker:
             hSet = set()
             for j in range(1, size):
                 nextN = 0
-                if random.randrange(0, 15) > 0:
-                    nextN = self.nextAddend(hSet)
-                    esta = nextN not in hSet
-                    hSet.add(nextN)
-                    if not esta:
+                if len(hSet) == 0 and j == (size-1):
+                    kakuro[i][j] = 10
+                elif (len(hSet) == 1) or (len(self.topRow(i,j)) == 1) or (random.randrange(0, 15) >= 8):
+                    nextN = self.addendForNonRepits(i, j, hSet)
+                    estaEn = nextN in hSet
+                    #hSet.add(nextN)
+                    if nextN == 10:
+                        print("Es 10", i, j)
+                        kakuro[i][j] = 10
+                        if len(hSet) == 1:
+                            kakuro[i][j-1] = 10
+                        hSet.clear()
+                    elif estaEn:
                         kakuro[i][j] = 10
                         hSet.clear()
                     elif not self.isDuplicated(i, j, nextN):
@@ -101,6 +145,7 @@ class kakuroMaker:
                         hSet.clear()
                 else:
                     kakuro[i][j] = 10
+                    hSet.clear()
 
         for row, col in product(range(size), repeat=2):
             if kakuro[row][col] == 10:
@@ -122,10 +167,10 @@ class kakuroMaker:
 
     def getNewBoard(self):
         kakuro = self.generate()
-        for row, col in product(range(self.size), repeat=2):
-            if len(kakuro[row][col]) == 1:
-                kakuro[row][col] = [0]
-        self.kakuro = kakuro
+        # for row, col in product(range(self.size), repeat=2):
+        #     if len(kakuro[row][col]) == 1:
+        #         kakuro[row][col] = [0]
+        # self.kakuro = kakuro
         return kakuro
 
     def getStrucForSolver(self):
@@ -133,19 +178,30 @@ class kakuroMaker:
             return []
         kakuro = self.kakuro
         newBoard = self.blankBoard()
+        strs = ''
         for i in range(self.size):
+            strs += '['
             for j in range(self.size):
+                strs += '['
                 if len(kakuro[i][j]) == 0:
+                    strs += 'Brick()'
                     newBoard[i][j] = Brick()
                 elif len(kakuro[i][j]) == 1:
+                    strs += 'Blank()'
                     newBoard[i][j] = Blank()
                 else:
                     if kakuro[i][j][1] == 0:
+                        strs += "Brick(v=" + str(kakuro[i][j][0]) + ")"
                         newBoard[i][j] = Brick(v=kakuro[i][j][0])
                     elif kakuro[i][j][0] == 0:
+                        strs += 'Brick(h=' + str(kakuro[i][j][1]) + ')'
                         newBoard[i][j] = Brick(h=kakuro[i][j][1])
                     else:
+                        strs += 'Brick(v=' + str(kakuro[i][j][0])  + ', h=' +  str(kakuro[i][j][1]) + ')'
                         newBoard[i][j] = Brick(v=kakuro[i][j][0], h=kakuro[i][j][1])
+                strs += '],'
+            strs += ']\n'
+        #print(strs)
         return newBoard
 
 def printLista(lista):
@@ -153,44 +209,31 @@ def printLista(lista):
         print(lista[i])
     print("\n")
 
-mak = kakuroMaker(10)
-lista = mak.generate()
-
-board1 = mak.getStrucForSolver()
-
-
-board = [[Brick(), Brick(v=14), Brick(v=5), Brick(v=28), Brick(v=3), Brick(), Brick(), Brick(v=26), Brick(v=5),
-              Brick(v=22)],
-             [Brick(h=12), Blank(), Blank(), Blank(), Blank(), Brick(v=12, h=24), Blank(), Blank(), Blank(), Blank()],
-             [Brick(h=23), Blank(), Blank(), Blank(), Blank(), Blank(), Brick(v=32, h=21), Blank(), Blank(), Blank()],
-             [Brick(), Brick(v=7), Brick(v=39), Blank(), Brick(h=6), Blank(), Blank(), Blank(), Brick(v=24), Blank()],
-             [Brick(h=20), Blank(), Blank(), Blank(), Brick(v=19, h=27), Blank(), Blank(), Blank(), Blank(),
-              Brick(v=34)],
-             [Brick(h=6), Blank(), Blank(), Brick(v=22, h=23), Blank(), Blank(), Blank(), Brick(v=13, h=15), Blank(),
-              Blank()],
-             [Brick(h=14), Blank(), Blank(), Blank(), Blank(), Brick(h=14), Blank(), Blank(), Blank(), Blank()],
-             [Brick(), Brick(v=6, h=22), Blank(), Blank(), Blank(), Brick(v=4, h=16), Blank(), Blank(), Brick(v=17),
-              Blank()],
-             [Brick(h=21), Blank(), Blank(), Blank(), Brick(h=24), Blank(), Blank(), Blank(), Blank(), Blank()],
-             [Brick(h=15), Blank(), Blank(), Blank(), Blank(), Blank(), Brick(h=20), Blank(), Blank(), Blank()]]
-
-print(board1)
-print(board)
-
-# k = KakuroBoard(board)
-# for entries in k.solve():
-#     print('*** SOLUTION ***')
-#     # for entry in entries:
-#     #    print '%2s: %s' % (entry.myID, entry.possibleValues)
-#     str = ''
-#     for row in board:
-#         for col in row:
-#             if isinstance(col, Brick):
-#                 str += '_ '
-#             else:
-#                 str += '%s ' % entries[col.myID].possibleValues[0]
-#         str += '\n'
-#     print(str)
+# solucionado = False
+# while not solucionado:
+#
+#     mak = kakuroMaker(10)
+#     lista = mak.generate()
+#     printLista(lista)
+#
+#     board = traslate(lista)
+#     k = KakuroBoard(board)
+#
+#     for entries in k.solve():
+#         solucionado = True
+#         print('*** SOLUTION ***')
+#         # for entry in entries:
+#         #    print '%2s: %s' % (entry.myID, entry.possibleValues)
+#         str = ''
+#         for row in board:
+#             for col in row:
+#                 if isinstance(col, Brick):
+#                     str += '_ '
+#                 else:
+#                     str += '%s ' % entries[col.myID].possibleValues[0]
+#             str += '\n'
+#         print(str)
+#         break
 
 
 
