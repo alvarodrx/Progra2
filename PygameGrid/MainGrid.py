@@ -109,7 +109,7 @@ def inicio():
     #Rutina de inicializacion
     print("Desea cargar un tablero guardado? S/N ")
     cargar = input("- ")
-    if cargar == "S":
+    if str(cargar).capitalize() == "S":
         gameList = loadFile()
         print(str(type(gameList)))
         pprint.pprint(gameList)
