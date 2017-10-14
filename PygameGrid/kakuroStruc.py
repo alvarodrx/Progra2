@@ -254,7 +254,6 @@ class KakuroBoard:
     def __init__(self, board):
         self.board = board
         self.entries = []
-        print(type(board[0][0]))
         # Convert to internal data structure, namely a list of sums represented
         # in the following way:
         # sum, [Blanks in the sum]
@@ -263,7 +262,6 @@ class KakuroBoard:
             for y, entry in enumerate(row):
                 # If the entry is a sum, process the sum.
                 if isinstance(entry, Brick):
-                    brkVal = "Brick: "
                     if entry.verticalSum:
                         blocks = []
                         posx = x + 1
@@ -272,7 +270,6 @@ class KakuroBoard:
                             blocks.append(col[posx])
                             posx += 1
                         sums.append(Sum(entry.verticalSum, blocks))
-                        brkVal += "v=" + str(entry.verticalSum)
                     if entry.horizontalSum:
                         blocks = []
                         posy = y + 1
@@ -280,11 +277,8 @@ class KakuroBoard:
                             blocks.append(row[posy])
                             posy += 1
                         sums.append(Sum(entry.horizontalSum, blocks))
-                        brkVal += "h=" + str(entry.horizontalSum)
-                    #print(brkVal)
                 elif isinstance(entry, Blank):
                     self.entries.append(entry)
-                    #print("Blank")
 
         # We have the structure.
         self.sums = sums
