@@ -53,8 +53,8 @@ class kakuroMaker:
         #     gameList[mitad][mitad + i] = 10
         #     i -= 1
 
-        print(gameList)
-        gameList= [[10, 10, 10, 10, 10, 10, 10, 10, 10, 10], [10, 10,  0,  0, 10, 10,  0,  0, 10, 10], [10, 10,  0,  0, 10, 10,  0,  0, 10, 10], [10,  0,  0, 10, 10,  0,  0,  0, 10, 10], [10,  0,  0, 10,  0,  0, 10,  0,  0, 10], [10,  0,  0, 10,  0,  0, 10,  0,  0, 10], [10, 10,  0,  0,  0, 10, 10,  0,  0, 10], [10, 10,  0,  0, 10, 10,  0,  0, 10, 10], [10, 10,  0,  0, 10, 10,  0,  0, 10, 10], [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]]
+        #print(gameList)
+        #gameList= [[10, 10, 10, 10, 10, 10, 10, 10, 10, 10], [10, 10,  0,  0, 10, 10,  0,  0, 10, 10], [10, 10,  0,  0, 10, 10,  0,  0, 10, 10], [10,  0,  0, 10, 10,  0,  0,  0, 10, 10], [10,  0,  0, 10,  0,  0, 10,  0,  0, 10], [10,  0,  0, 10,  0,  0, 10,  0,  0, 10], [10, 10,  0,  0,  0, 10, 10,  0,  0, 10], [10, 10,  0,  0, 10, 10,  0,  0, 10, 10], [10, 10,  0,  0, 10, 10,  0,  0, 10, 10], [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]]
         return gameList
 
     def nextAddend(self, added):
@@ -150,7 +150,7 @@ class kakuroMaker:
             hSet = set()
             for j in range(1, size):
                 nextN = 0
-                if kakuro[i][j] == 10 or (len(hSet) == 0 and j == (size-1)):
+                if kakuro[i][j] == 10 or (len(hSet) == 0 and j == (size-1)) or (random.randrange(0, 5) >= 3):
                     kakuro[i][j] = 10
                     hSet.clear()
                 else:# (len(hSet) == 1) or (len(self.topRow(i,j)) == 1) or (random.randrange(0, 5) >= 3):
@@ -237,6 +237,10 @@ def printLista(lista):
     for i in range(0, len(lista)):
         print(lista[i])
     print("\n")
+
+
+mak = kakuroMaker(11).generate()
+print(mak)
 
 # solucionado = False
 # while not solucionado:
