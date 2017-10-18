@@ -1167,8 +1167,8 @@
 #             return
 #         yield from getValuesForLen(listLen, sumTotal, copyList)
 #
-#
-# x = getValuesForLen(0, 24, [])
+# #
+# x = getValuesForLen(2, 9, [])
 # for i in x:
 #     print("asd:",i)
 
@@ -1369,3 +1369,25 @@
 # # [   [[],    [5, 0],                                     [12, 0]],
 # #  [[0, 6], [[[[1, 4], [2, 3]], [[1, 5], [2, 4]]]],   [[[[3, 9], [4, 8], [5, 7]], [[1, 5], [2, 4]]]]],
 # #  [[0, 11], [[[[1, 4], [2, 3]], [[2, 9], [3, 8],     [4, 7], [5, 6]]]], [[[[3, 9], [4, 8], [5, 7]], [[2, 9], [3, 8], [4, 7], [5, 6]]]]]]
+
+import threading
+from queue import Queue
+import time
+
+class PingAssets(threading.Thread):
+    def __init__(self, threadNum, asset, window):
+        threading.Thread.__init__(self)
+        self.threadNum = threadNum
+        self.window = window
+        self.asset = asset
+        self.signal = True
+
+    def run(self):
+        while self.signal:
+             do_stuff()
+             sleep()
+
+    def OnStop(self, e):
+        for t in self.threads:
+            t.signal = False
+

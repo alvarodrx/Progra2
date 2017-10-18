@@ -4,6 +4,7 @@ import pygbutton
 from tkinter.filedialog import *
 import kakuroMaker
 import pprint #Se debe instalar a traves de pycharm
+import  SolverTry
 import numpy as np
 import time
 import os
@@ -103,6 +104,15 @@ def drawGrid():
     solveGameButton.draw(screen)
     pygame.display.flip()
 
+def solveGame():
+    global gameList
+    x = SolverTry.KakuroSolver(gameList)
+    lista = x.solve()
+    solution = []
+    for i in lista:
+        solution = i
+    return solution
+
 def inicio():
     global gameList,gameOver, screen, tamaño, sizeSquare, tamPlantilla, size, newGameButton, saveGameButton, solveGameButton, Fuente, FuenteG, colScreen
 
@@ -149,7 +159,7 @@ def inicio():
             if 'click' in saveGameButton.handleEvent(event):
                 saveFile(gameList)
             if 'click' in solveGameButton.handleEvent(event):
-                print("T LA KREISTE WE!")
+                gameList = solveGame()
         drawGrid()
         clock.tick(10)
 

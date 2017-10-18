@@ -150,10 +150,10 @@ class kakuroMaker:
             hSet = set()
             for j in range(1, size):
                 nextN = 0
-                if kakuro[i][j] == 10 or (len(hSet) == 0 and j == (size-1)) or (random.randrange(0, 5) >= 3):
+                if kakuro[i][j] == 10 or (len(hSet) == 0 and j == (size-1)):
                     kakuro[i][j] = 10
                     hSet.clear()
-                else:# (len(hSet) == 1) or (len(self.topRow(i,j)) == 1) or (random.randrange(0, 5) >= 3):
+                elif (len(hSet) == 1) or (len(self.topRow(i,j)) == 1) or (random.randrange(0, 5) >= 3):
                     nextN = self.addendForNonRepits(i, j, hSet)
                     estaEn = nextN in hSet
                     #hSet.add(nextN)
@@ -172,9 +172,9 @@ class kakuroMaker:
                     else:
                         kakuro[i][j] = 10
                         hSet.clear()
-                # else:
-                #     kakuro[i][j] = 10
-                #     hSet.clear()
+                else:
+                    kakuro[i][j] = 10
+                    hSet.clear()
 
         for row, col in product(range(size), repeat=2):
             if kakuro[row][col] == 10:
@@ -196,10 +196,10 @@ class kakuroMaker:
 
     def getNewBoard(self):
         kakuro = self.generate()
-        # for row, col in product(range(self.size), repeat=2):
-        #     if len(kakuro[row][col]) == 1:
-        #         kakuro[row][col] = [0]
-        # self.kakuro = kakuro
+        for row, col in product(range(self.size), repeat=2):
+            if len(kakuro[row][col]) == 1:
+                kakuro[row][col] = [0]
+        self.kakuro = kakuro
         return kakuro
 
     def getStrucForSolver(self):
@@ -238,9 +238,10 @@ def printLista(lista):
         print(lista[i])
     print("\n")
 
-
+"""
 mak = kakuroMaker(11).generate()
 print(mak)
+"""
 
 # solucionado = False
 # while not solucionado:
