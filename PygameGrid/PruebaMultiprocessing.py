@@ -128,64 +128,106 @@
 #         proc.join()
 #     print (return_dict.values())
 
-import multiprocessing
-import threading
-from time import sleep
+# import multiprocessing
+# import threading
+# from time import sleep
+#
+# def run(i, conn):
+#     try:
+#         f(i)
+#     except CustomException as e:
+#         conn.send(e)
+#
+# def f(i):
+#    print(i, ' called')
+#    sleep(i)
+#    if i == 11:
+#        raise CustomException
+#    print(i, ' done')
+#
+# class CustomException(Exception):
+#     pass
+#
+# class ProcessManager(object):
+#     def __init__(self):
+#         self.processes = []
+#         self._threads = []
+#         self._lock = threading.Lock()
+#
+#     def terminate_all(self):
+#         with self._lock:
+#             for p in self.processes:
+#                 if p.is_alive():
+#                     print("Terminating %s" % p)
+#                     p.terminate()
+#
+#     def launch_proc(self, func, args=(), kwargs= {}):
+#         t = threading.Thread(target=self._proc_thread_runner,
+#                              args=(func, args, kwargs))
+#         self._threads.append(t)
+#         t.start()
+#
+#     def _proc_thread_runner(self, func, args, kwargs):
+#         parent_conn, child_conn = multiprocessing.Pipe()
+#         args = args + tuple([child_conn])
+#         p = multiprocessing.Process(target=func, args=args, kwargs=kwargs)
+#         self.processes.append(p)
+#         p.start()
+#         while p.exitcode is None:
+#             p.join()
+#         if parent_conn.poll():
+#             obj = parent_conn.recv()
+#             if isinstance(obj, CustomException):
+#                 self.terminate_all()
+#
+#     def wait(self):
+#         for t in self._threads:
+#             t.join()
+#
+# if __name__ == '__main__':
+#     proc_manager = ProcessManager()
+#     for i in range(0, 20):
+#         proc_manager.launch_proc(run, (i,))
+#     proc_manager.wait()
 
-def run(i, conn):
-    try:
-        f(i)
-    except CustomException as e:
-        conn.send(e)
+import time
+import numpy as np
+import multiprocessing as mp
+import time
+import sys
+import os
+import psutil
+import signal
+
+pid_array = []
 
 def f(i):
-   print(i, ' called')
-   sleep(i)
-   if i == 11:
-       raise CustomException
-   print(i, ' done')
+    np.random.seed(int(time.time()+i))
 
-class CustomException(Exception):
-    pass
+    time.sleep(3)
+    res=np.random.rand()
+    current_process = os.getpid()
+    print( "From i = ",i, "       res = ",res, " with process ID (pid) = ", current_process)
+    if res>0.7:
+        print("find it")
+        # solution: use the parent child connection between processes
+        parent = psutil.Process(main_process)
+        children = parent.children(recursive=True)
+        print("asd")
+        for process in children:
+            if not (process.pid == current_process):
+                print("Process: ",current_process,  " killed process: ", process.pid)
+                process.send_signal(signal.SIGTERM)
+    else:
+        time.sleep(20)
 
-class ProcessManager(object):
-    def __init__(self):
-        self.processes = []
-        self._threads = []
-        self._lock = threading.Lock()
+main_process = os.getpid()
+if __name__=='__main__':
+    #main_process = os.getpid()
+    num_workers=mp.cpu_count()
+    pool=mp.Pool(num_workers)
 
-    def terminate_all(self):
-        with self._lock:
-            for p in self.processes:
-                if p.is_alive():
-                    print("Terminating %s" % p)
-                    p.terminate()
-
-    def launch_proc(self, func, args=(), kwargs= {}):
-        t = threading.Thread(target=self._proc_thread_runner,
-                             args=(func, args, kwargs))
-        self._threads.append(t)
-        t.start()
-
-    def _proc_thread_runner(self, func, args, kwargs):
-        parent_conn, child_conn = multiprocessing.Pipe()
-        args = args + tuple([child_conn])
-        p = multiprocessing.Process(target=func, args=args, kwargs=kwargs)
-        self.processes.append(p)
+    print("Main process: ", main_process)
+    for i in range(num_workers):
+        p=mp.Process(target=f,args=(i,))
         p.start()
-        while p.exitcode is None:
-            p.join()
-        if parent_conn.poll():
-            obj = parent_conn.recv()
-            if isinstance(obj, CustomException):
-                self.terminate_all()
-
-    def wait(self):
-        for t in self._threads:
-            t.join()
-
-if __name__ == '__main__':
-    proc_manager = ProcessManager()
-    for i in range(0, 20):
-        proc_manager.launch_proc(run, (i,))
-    proc_manager.wait()

@@ -2,6 +2,13 @@ from copy import deepcopy
 from itertools import *
 import multiprocessing
 import time
+import sys
+import os
+import psutil
+import signal
+
+pid_array = []
+
 
 class beanKakuro:
     def __init__(self, boardCopy, row, col, prom):
@@ -160,9 +167,14 @@ class KakuroSolver:
     def subprocess(self, proces, iter, beanObj, return_dict):
         solution = self.solver(beanObj.board, beanObj.row, beanObj.col, beanObj.prom)
         print("Subprocess",proces," Completed")
-        print(solution)
+        #print(solution)
         return_dict = solution
+        return solution
 
+    def callback(self, result):
+        if result:
+            self.boardResult = result
+            self.pool.terminate()
 
 
     def solve(self):
@@ -173,12 +185,16 @@ class KakuroSolver:
         manager = multiprocessing.Manager()
         return_dict = manager.dict()
         self.pool = multiprocessing.Pool(len(promList)+1)
+        main_process = os.getpid()
         for i in promList:
-            self.pool.apply_async(func=self.subprocess, args=(i, i*2, beanKakuro(boardCopy,row,col,i), return_dict))
+            self.pool.apply_async(func=self.subprocess, args=(i, i*2, beanKakuro(boardCopy,row,col,i), return_dict),
+                                  callback=self.callback)
             print("Subprocess", i, " has been started")
+        h = time.time()
         self.pool.close()
         self.pool.join()
-        return return_dict.values()
+        print("Tiempo total:",time.time()-h)
+        return self.boardResult
 
 
 
