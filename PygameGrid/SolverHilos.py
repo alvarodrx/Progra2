@@ -13,7 +13,7 @@ class beanKakuro:
 
 class KakuroSolver:
     def __init__(self, board):
-        self.MaxHilos = 100
+        self.MaxHilos = 1
         self.board = board
         self.size = len(board)
         self.mutex = threading.Lock()  # esta variable se encarga de mantener una sincronia entre los hilos
@@ -37,7 +37,6 @@ class KakuroSolver:
         while nextCol < sizeBoard and len(board[row][nextCol]) == 1:
             rowLen += 1
             nextCol += 1
-
         return colLen, rowLen
 
     def getValForLen(self, listLen, sumTotal, actList):
@@ -70,7 +69,7 @@ class KakuroSolver:
         return newList
 
     def setPosibleValues(self, boardM):
-        board = deepcopy(boardM)
+        board = boardM#deepcopy(boardM)
         size = self.size
         for y, row in enumerate(board):
             for x, col in enumerate(row):
@@ -78,11 +77,6 @@ class KakuroSolver:
                     rowLen, colLen = self.getCellsLen(board, y, x)
                     sumsForRow = self.getValuesForLen(rowLen, col[0], [])
                     sumsForCol = self.getValuesForLen(colLen, col[1], [])
-                    # print(col)
-                    # print("rowlen",rowLen)
-                    # print("colLen",colLen)
-                    # print(sumsForRow)
-                    # print(sumsForCol)
 
                     posy = y+1
                     for i in range(rowLen):
@@ -98,9 +92,6 @@ class KakuroSolver:
                         else:
                             board[y][posx][0][1] = deepcopy(sumsForCol)
                         posx += 1
-        # for i, j in product(range(size), repeat=2):
-        #     if len(board[i][j]) == 1:
-        #         board[i][j][0] = self.getPromissingList(board[i][j][0])
         return board
 
     def getPromissingList(self, vhList):
@@ -122,7 +113,6 @@ class KakuroSolver:
         return result
 
     def recalculateLists(self, vLists, value):
-        #print(vLists)
         nvList = []
         for i in vLists:
             if value in i:
@@ -174,13 +164,15 @@ class KakuroSolver:
 
     def solucionador(self, beanObj):
         #ahora = time.time()
-        solution = self.solver(beanObj.board, beanObj.row, beanObj.col, beanObj.prom)
+        #print("Entra con:", beanObj.prom)
+        self.solver(beanObj.board, beanObj.row, beanObj.col, beanObj.prom)
         #print('La recursion tomo: ', time.time()-ahora, threading.current_thread().name)
-        if solution:
-            #print("SOLUCIOOOON")
-            self.boardResult = solution
-            return solution
-        return
+        if self.boardResult:
+            print("SOLUCIOOOON")
+            #self.boardResult = solution
+        else:
+            #print("No solucion")
+            pass
 
 
 
@@ -193,10 +185,13 @@ class KakuroSolver:
             #hilo = threading.Thread(target=self.prueba)
             #hilo.start()
             #self.BeanInfo = beanKakuro(boardCopy,row,col,0)
+            jobs = []
             for prometedor in promList:
                 thread = threading.Thread(target=self.solucionador, args=(beanKakuro(boardCopy,row,col,prometedor),))
                 thread.daemon = True
                 self.MaxHilos -= 1
+                jobs.append(thread)
+            for thread in jobs:
                 thread.start()
 
             print("Hilos hechos")
@@ -208,7 +203,7 @@ class KakuroSolver:
         else:
             self.mutex.acquire()
             actuales = self.MaxHilos
-            self.mutex.release()
+            #self.mutex.release()
             if actuales >= 0:
                 boardCopy = deepcopy(board)
                 for prometedor in promList:
@@ -216,42 +211,42 @@ class KakuroSolver:
                     thread.daemon = True
                     self.MaxHilos -= 1
                     thread.start()
+                self.mutex.release()
+                #print("Hilos hechos", self.MaxHilos)
 
-                print("Hilos hechos", self.MaxHilos)
 
             else:
-                #self.mutex.release()
+                self.mutex.release()
                 while promList != set():
                     j = self.solver(board, row, col, promList.pop())
                     if type(j) == list and j:
                         promList.clear()
                         return j
-            while not self.boardResult:
-                pass
 
-            return self.boardResult
+                return []
 
 
 
     def solver(self, boardM, row, col, prom):
-        board = self.recalculateValues(boardM, row, col, prom)
-        row, col = self.nextBlank(row, col)
         if self.boardResult != []:
-            return []
-        if row == 0 or col == 0: #Esta completo
-            print("Listo")
-            self.flag = 1
-            self.boardResult = board
-            return board
+            return
         else:
-            promList = self.getPromissingList(board[row][col][0])
-            if promList == set():
-                return []
-            while promList != set():
-                j = self.solver(board, row, col, promList.pop())
-                if type(j) == list and j:
-                    promList.clear()
-                    return j
+            board = self.recalculateValues(boardM, row, col, prom)
+            if self.boardResult != []:
+                return
+            row, col = self.nextBlank(row, col)
+            if row == 0 or col == 0: #Esta completo
+                print("Listo")
+                self.flag = 1
+                self.boardResult = board
+            else:
+                promList = self.getPromissingList(board[row][col][0])
+                if promList == set():
+                    pass
+                else:
+                    if self.boardResult != []:
+                        return
+                    self.solve(board, row, col, promList)
 
 
 
@@ -260,8 +255,9 @@ class KakuroSolver:
 
 
 
-def printLista(lista)::
-    for i in range(0, len(lista))
+
+def printLista(lista):
+    for i in range(0, len(lista)):
         print(lista[i])
     print("\n")
 
@@ -300,7 +296,7 @@ board11 = [[[], [], [40, 0], [21, 0], [], [], [], [], [19, 0], [24, 0], [13, 0]]
 board15 =[[[], [], [], [4, 0], [], [], [], [], [20, 0], [], [9, 0], [8, 0], [37, 0], [], []], [[], [5, 0], [0, 4], [4], [], [27, 0], [], [0, 1], [1], [0, 21], [9], [8], [4], [27, 0], [14, 0]], [[0, 5], [5], [4, 0], [6, 0], [7, 8], [8], [], [0, 2], [2], [1, 0], [], [5, 19], [9], [4], [6]], [[], [6, 18], [4], [6], [7], [1], [21, 0], [6, 7], [6], [1], [9, 22], [4], [3], [7], [8]], [[0, 6], [6], [25, 0], [], [0, 30], [9], [7], [6], [8], [9, 16], [7], [1], [5], [3], []], [[], [2, 6], [6], [15, 0], [0, 12], [3], [9], [0, 14], [3], [9], [2], [6, 9], [1], [8], [4, 0]], [[0, 10], [2], [3], [5], [0, 11], [6], [5], [], [6, 0], [34, 0], [0, 12], [1], [2], [5], [4]], [[], [0, 15], [7], [8], [], [16, 0], [7, 0], [16, 6], [4], [2], [14, 11], [5], [6], [], []], [[], [5, 11], [9], [2], [5, 30], [9], [7], [3], [2], [4], [5], [5, 7], [7], [18, 0], []], [[0, 5], [5], [], [15, 12], [5], [7], [0, 2], [2], [0, 15], [1], [9], [5], [4, 3], [3], [8, 0]], [[], [22, 0], [0, 8], [8], [9, 0], [], [0, 6], [6], [0, 8], [8], [4, 0], [0, 15], [4], [9], [2]], [[0, 6], [6], [0, 11], [2], [9], [4, 0], [10, 5], [5], [3, 13], [9], [4], [], [4, 7], [1], [6]], [[0, 7], [7], [0, 5], [5], [0, 5], [4], [1], [0, 10], [3], [7], [], [0, 9], [4], [5], []], [[0, 4], [4], [3, 0], [8, 0], [], [0, 3], [3], [3, 0], [9, 3], [3], [6, 0], [5, 0], [], [], []], [[0, 16], [5], [3], [8], [], [0, 18], [6], [3], [9], [0, 11], [6], [5], [], [], []]]
 
 ahora = time.time()
-x = KakuroSolver(board7)
+x = KakuroSolver(board11)
 lista = x.solve()
 print(lista)
 print('todo el trabajo duro: ',time.time()-ahora,' segundos')

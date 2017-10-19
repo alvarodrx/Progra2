@@ -21,7 +21,7 @@ class KakuroSolver:
     def __init__(self, board):
         self.board = board
         self.size = len(board)
-        self.pool = multiprocessing.Pool(1)
+        self.pool = multiprocessing.Pool()
         m = multiprocessing.Manager()
         self.queue = m.Queue()
         self.boardResult = []
@@ -184,7 +184,7 @@ class KakuroSolver:
         print("promlist:", promList)
         manager = multiprocessing.Manager()
         return_dict = manager.dict()
-        self.pool = multiprocessing.Pool(len(promList)+1)
+        #self.pool = multiprocessing.Pool(len(promList)+1)
         main_process = os.getpid()
         for i in promList:
             self.pool.apply_async(func=self.subprocess, args=(i, i*2, beanKakuro(boardCopy,row,col,i), return_dict),
