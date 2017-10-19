@@ -1,12 +1,31 @@
 from copy import deepcopy
 from itertools import *
+import multiprocessing
 import time
+
+class beanKakuro:
+    def __init__(self, boardCopy, row, col, prom):
+        self. board = boardCopy
+        self.row = row
+        self.col = col
+        self.prom = prom
 
 class KakuroSolver:
     def __init__(self, board):
         self.board = board
         self.size = len(board)
+        self.pool = multiprocessing.Pool(1)
+        m = multiprocessing.Manager()
+        self.queue = m.Queue()
+        self.boardResult = []
 
+    def __getstate__(self):
+        self_dict = self.__dict__.copy()
+        del self_dict['pool']
+        return self_dict
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
 
     def getCellsLen(self, board, row, col):
         """Obtiene la cantidad de celdas para una
@@ -138,38 +157,51 @@ class KakuroSolver:
                 return i, j
         return 0, 0
 
+    def subprocess(self, proces, iter, beanObj, return_dict):
+        solution = self.solver(beanObj.board, beanObj.row, beanObj.col, beanObj.prom)
+        print("Subprocess",proces," Completed")
+        print(solution)
+        return_dict = solution
+
+
+
     def solve(self):
         boardCopy = self.setPosibleValues(self.board)
-        # col =_1
-        # row = 1
-        # for i in range(self.size):
-        #     for j in range(self.size):
-        #         if len(self.board[i][j] == 1):
-        #             col = j
-        #             row = i
-        #             break
         row, col = self.nextBlank(1,0)
-        # print("r:",row)
-        # print("c:", col)
         promList = self.getPromissingList(boardCopy[row][col][0])
         print("promlist:", promList)
+        manager = multiprocessing.Manager()
+        return_dict = manager.dict()
+        self.pool = multiprocessing.Pool(len(promList)+1)
         for i in promList:
-            ahora = time.time()
-            j = self.solver(boardCopy, row, col, i)
-            print("La recursion tomo: ", time.time()-ahora)
-            # yield j
-            if type(j) == list and j:
-                #print("Resuelto", j)
-                promList.clear()
-                return j
-        #return self.solver(boardCopy, row, col, 0)
+            self.pool.apply_async(func=self.subprocess, args=(i, i*2, beanKakuro(boardCopy,row,col,i), return_dict))
+            print("Subprocess", i, " has been started")
+        self.pool.close()
+        self.pool.join()
+        return return_dict.values()
+
+
+
+
+        # for prometedor in promList:
+        #     ahora = time.time()
+        #     j = self.solucionador(beanKakuro(boardCopy,row,col,prometedor))
+        #     print("La recursion tomo: ", time.time()-ahora)
+        #     # yield j
+        #     if type(j) == list and j:
+        #         #print("Resuelto", j)
+        #         promList.clear()
+        #         return j
+        # #return self.solver(boardCopy, row, col, 0)
 
     def solver(self, boardM, row, col, prom):
         #board = deepcopy(boardM)
         board = self.recalculateValues(boardM, row, col, prom)
-
+        if self.boardResult != []:
+            return []
         row, col = self.nextBlank(row, col)
         if row == 0 or col == 0: #Esta completo
+            self.boardResult = board
             return board
         else:
             promList = self.getPromissingList(board[row][col][0])
@@ -227,9 +259,10 @@ board10 =[[[], [], [], [6, 0], [10, 0], [], [], [], [20, 0], []], [[], [5, 0], [
 board11 = [[[], [], [40, 0], [21, 0], [], [], [], [], [19, 0], [24, 0], [13, 0]], [[], [0, 9], [3], [6], [], [], [], [0, 20], [5], [7], [8]], [[], [0, 8], [7], [1], [], [], [], [9, 19], [6], [8], [5]], [[], [11, 9], [4], [5], [], [], [23, 21], [4], [8], [9], []], [[0, 16], [5], [2], [9], [8, 0], [17, 7], [2], [5], [5, 0], [12, 0], []], [[0, 7], [6], [1], [12, 20], [5], [6], [9], [0, 6], [1], [5], [16, 0]], [[], [12, 22], [6], [1], [3], [7], [5], [0, 17], [4], [6], [7]], [[0, 21], [9], [8], [4], [0, 5], [4], [1], [16, 0], [0, 10], [1], [9]], [[0, 14], [3], [9], [2], [5, 0], [0, 8], [6], [2], [14, 0], [10, 0], []], [[], [], [0, 9], [5], [4], [4, 0], [0, 19], [6], [9], [4], []], [[], [], [], [0, 5], [1], [4], [0, 19], [8], [5], [6], []]]
 board15 =[[[], [], [], [4, 0], [], [], [], [], [20, 0], [], [9, 0], [8, 0], [37, 0], [], []], [[], [5, 0], [0, 4], [4], [], [27, 0], [], [0, 1], [1], [0, 21], [9], [8], [4], [27, 0], [14, 0]], [[0, 5], [5], [4, 0], [6, 0], [7, 8], [8], [], [0, 2], [2], [1, 0], [], [5, 19], [9], [4], [6]], [[], [6, 18], [4], [6], [7], [1], [21, 0], [6, 7], [6], [1], [9, 22], [4], [3], [7], [8]], [[0, 6], [6], [25, 0], [], [0, 30], [9], [7], [6], [8], [9, 16], [7], [1], [5], [3], []], [[], [2, 6], [6], [15, 0], [0, 12], [3], [9], [0, 14], [3], [9], [2], [6, 9], [1], [8], [4, 0]], [[0, 10], [2], [3], [5], [0, 11], [6], [5], [], [6, 0], [34, 0], [0, 12], [1], [2], [5], [4]], [[], [0, 15], [7], [8], [], [16, 0], [7, 0], [16, 6], [4], [2], [14, 11], [5], [6], [], []], [[], [5, 11], [9], [2], [5, 30], [9], [7], [3], [2], [4], [5], [5, 7], [7], [18, 0], []], [[0, 5], [5], [], [15, 12], [5], [7], [0, 2], [2], [0, 15], [1], [9], [5], [4, 3], [3], [8, 0]], [[], [22, 0], [0, 8], [8], [9, 0], [], [0, 6], [6], [0, 8], [8], [4, 0], [0, 15], [4], [9], [2]], [[0, 6], [6], [0, 11], [2], [9], [4, 0], [10, 5], [5], [3, 13], [9], [4], [], [4, 7], [1], [6]], [[0, 7], [7], [0, 5], [5], [0, 5], [4], [1], [0, 10], [3], [7], [], [0, 9], [4], [5], []], [[0, 4], [4], [3, 0], [8, 0], [], [0, 3], [3], [3, 0], [9, 3], [3], [6, 0], [5, 0], [], [], []], [[0, 16], [5], [3], [8], [], [0, 18], [6], [3], [9], [0, 11], [6], [5], [], [], []]]
 
-x = KakuroSolver(board11)
-lista = x.solve()
-print(lista)
+if __name__ == '__main__':
+    x = KakuroSolver(board11)
+    lista = x.solve()
+    print(lista)
 #for i in lista:
 #    print("solve:")
 #    printLista(i)
